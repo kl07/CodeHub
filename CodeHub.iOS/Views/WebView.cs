@@ -4,12 +4,14 @@ using Foundation;
 using CodeHub.Core.ViewModels;
 using WebKit;
 using MvvmCross.iOS.Views;
-using CodeHub.iOS.Utilities;
+using CodeHub.Core.Services;
+using MvvmCross.Platform;
 
 namespace CodeHub.iOS.Views
 {
     public class WebView : MvxViewController
     {
+        private static INetworkActivity _networkActivity = Mvx.Resolve<INetworkActivityService>().Create();
         protected UIBarButtonItem BackButton;
         protected UIBarButtonItem RefreshButton;
         protected UIBarButtonItem ForwardButton;
@@ -111,7 +113,7 @@ namespace CodeHub.iOS.Views
 
         protected virtual void OnLoadError (NSError error)
         {
-            NetworkActivity.PopNetworkActive();
+            _networkActivity.Down();
 
             if (BackButton != null)
             {
@@ -123,7 +125,7 @@ namespace CodeHub.iOS.Views
 
         protected virtual void OnLoadStarted (object sender, EventArgs e)
         {
-            NetworkActivity.PushNetworkActive();
+            _networkActivity.Up();
 
             if (RefreshButton != null)
                 RefreshButton.Enabled = false;
@@ -131,7 +133,7 @@ namespace CodeHub.iOS.Views
 
         protected virtual void OnLoadFinished(object sender, EventArgs e)
         {
-            NetworkActivity.PopNetworkActive();
+            _networkActivity.Down();
 
             if (BackButton != null)
             {
@@ -163,13 +165,12 @@ namespace CodeHub.iOS.Views
             Web.NavigationDelegate = new NavigationDelegate(this);
             Add(Web);
 
-            var loadableViewModel = ViewModel as LoadableViewModel;
+            var loadableViewModel = ViewModel as ILoadableViewModel;
             if (loadableViewModel != null)
             {
-                loadableViewModel.Bind(x => x.IsLoading).Subscribe(x =>
-                {
-                    if (x) NetworkActivity.PushNetworkActive();
-                    else NetworkActivity.PopNetworkActive();
+                loadableViewModel.LoadCommand.IsExecuting.Subscribe(x => {
+                    if (x) _networkActivity.Up();
+                    else _networkActivity.Down();
                 });
             }
         }
@@ -196,7 +197,7 @@ namespace CodeHub.iOS.Views
                 return string.Empty;
 
             var uri = Uri.EscapeUriString("file://" + path) + "#" + Environment.TickCount;
-            InvokeOnMainThread(() => Web.LoadRequest(new Foundation.NSUrlRequest(new Foundation.NSUrl(uri))));
+            InvokeOnMainThread(() => Web.LoadRequest(new NSUrlRequest(new NSUrl(uri))));
             return uri;
         }
 

@@ -5,6 +5,7 @@ using UIKit;
 using System.Linq;
 using CodeHub.iOS.Utilities;
 using CodeHub.iOS.DialogElements;
+using ReactiveUI;
 
 namespace CodeHub.iOS.Views.Issues
 {
@@ -34,22 +35,21 @@ namespace CodeHub.iOS.Views.Issues
 
             Root.Reset(new Section { title, assignedTo, milestone, labels }, new Section { content });
 
-            OnActivation(d =>
-            {
-                d(vm.Bind(x => x.IssueTitle, true).Subscribe(x => title.Value = x));
+            OnActivation(d => {
+                d(vm.Bind(x => x.IssueTitle).Subscribe(x => title.Value = x));
                 d(title.Changed.Subscribe(x => vm.IssueTitle = x));
 
-                d(vm.Bind(x => x.Content, true).Subscribe(x => content.Details = x));
-                d(labels.Clicked.Subscribe(_ => vm.GoToLabelsCommand.Execute(null)));
-                d(milestone.Clicked.Subscribe(_ => vm.GoToMilestonesCommand.Execute(null)));
-                d(assignedTo.Clicked.Subscribe(_ => vm.GoToAssigneeCommand.Execute(null)));
+                d(vm.Bind(x => x.Content).Subscribe(x => content.Details = x));
+                d(labels.Clicked.InvokeCommand(vm.GoToLabelsCommand));
+                d(milestone.Clicked.InvokeCommand(vm.GoToMilestonesCommand));
+                d(assignedTo.Clicked.InvokeCommand(vm.GoToAssigneeCommand));
                 d(vm.Bind(x => x.IsSaving).SubscribeStatus("Saving..."));
 
-                d(vm.Bind(x => x.AssignedTo, true).Subscribe(x => {
+                d(vm.Bind(x => x.AssignedTo).Subscribe(x => {
                     assignedTo.Value = x == null ? "Unassigned" : x.Login;
                 }));
 
-                d(vm.Bind(x => x.Milestone, true).Subscribe(x => {
+                d(vm.Bind(x => x.Milestone).Subscribe(x => {
                     milestone.Value = x == null ? "None" : x.Title;
                 }));
 

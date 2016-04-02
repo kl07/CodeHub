@@ -9,6 +9,8 @@ using CodeHub.Core.Utilities;
 using CodeHub.iOS.ViewControllers.Repositories;
 using CodeHub.iOS.Transitions;
 using GitHubSharp.Models;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 
 namespace CodeHub.iOS.Views.Repositories
 {
@@ -32,24 +34,25 @@ namespace CodeHub.iOS.Views.Repositories
             TableView.EstimatedRowHeight = 64f;
             TableView.SeparatorInset = new UIEdgeInsets(0, 56f, 0, 0);
 
-            vm.Bind(x => x.Repositories).Subscribe(repos =>
-            {
-                Root.Reset(repos.Select(x => {
-                    var s = new Section(CreateHeaderView(x.Item1));
-                    s.Reset(x.Item2.Select(repo => {
-                        var description = vm.ShowRepositoryDescription ? repo.Description : string.Empty;
-                        var avatar = new GitHubAvatar(repo.Owner?.AvatarUrl);
-                        var sse = new RepositoryElement(repo.Name, repo.StargazersCount, repo.Forks, description, repo.Owner?.Login, avatar) { ShowOwner = true };
-                        sse.Tapped += MakeCallback(weakVm, repo);
-                        return sse;
+            vm.Bind(x => x.Repositories)
+                .Select(x => x ?? Enumerable.Empty<Tuple<string, IList<RepositoryModel>>>())
+                .Subscribe(repos => {
+                    Root.Reset(repos.Select(x => {
+                        var s = new Section(CreateHeaderView(x.Item1));
+                        s.Reset(x.Item2.Select(repo => {
+                            var description = vm.ShowRepositoryDescription ? repo.Description : string.Empty;
+                            var avatar = new GitHubAvatar(repo.Owner?.AvatarUrl);
+                            var sse = new RepositoryElement(repo.Name, repo.StargazersCount, repo.Forks, description, repo.Owner?.Login, avatar) { ShowOwner = true };
+                            sse.Tapped += MakeCallback(weakVm, repo);
+                            return sse;
+                        }));
+                        return s;
                     }));
-                    return s;
-                }));
             });
 
             OnActivation(d => {
                 d(_trendingTitleButton.GetClickedObservable().Subscribe(_ => ShowLanguages()));
-                d(vm.Bind(x => x.SelectedLanguage, true).Subscribe(l => _trendingTitleButton.Text = l.Name));
+                d(vm.Bind(x => x.SelectedLanguage).Subscribe(l => _trendingTitleButton.Text = l.Name));
             });
         }
 
@@ -68,7 +71,7 @@ namespace CodeHub.iOS.Views.Repositories
             view.NavigationItem.LeftBarButtonItem.GetClickedObservable().Subscribe(_ => DismissViewController(true, null));
             view.Language.Subscribe(x => {
                 Root.Clear();
-                vm.Get().Do(y => y.SelectedLanguage = x);
+                vm.Get().Valid(y => y.SelectedLanguage = x);
                 DismissViewController(true, null);
             });
             var ctrlToPresent = new ThemedNavigationController(view);

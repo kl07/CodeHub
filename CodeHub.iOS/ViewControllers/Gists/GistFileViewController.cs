@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MvvmCross.Platform;
 using CodeHub.Core.Services;
 using CodeHub.Core.ViewModels.Gists;
+using System.Reactive.Linq;
 
 namespace CodeHub.iOS.ViewControllers.Gists
 {
@@ -15,7 +16,9 @@ namespace CodeHub.iOS.ViewControllers.Gists
             base.ViewDidLoad();
 
             var vm = ViewModel as GistFileViewModel;
-            vm.Bind(x => x.ContentPath).Subscribe(x => LoadSource(new Uri("file://" + x)));
+            vm.Bind(x => x.ContentPath)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Subscribe(x => LoadSource(new Uri("file://" + x)));
         }
 
         async Task LoadSource(Uri fileUri)

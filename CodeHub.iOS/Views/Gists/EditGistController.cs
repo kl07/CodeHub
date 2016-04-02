@@ -10,6 +10,7 @@ using CodeHub.iOS.Services;
 using CodeHub.iOS.DialogElements;
 using System.Threading.Tasks;
 using CodeHub.iOS.ViewControllers.Gists;
+using CodeHub.Core.Services;
 
 namespace CodeHub.iOS.Views
 {
@@ -47,9 +48,10 @@ namespace CodeHub.iOS.Views
                 return;
             }
 
-            var app = MvvmCross.Platform.Mvx.Resolve<CodeHub.Core.Services.IApplicationService>();
+            var app = MvvmCross.Platform.Mvx.Resolve<IApplicationService>();
+            var networkActivity = MvvmCross.Platform.Mvx.Resolve<INetworkActivityService>().Create();
             var hud = this.CreateHud();
-            NetworkActivity.PushNetworkActive();
+            networkActivity.Up();
 
             try
             {
@@ -61,7 +63,7 @@ namespace CodeHub.iOS.Views
             finally
             {
                 hud.Hide();
-                NetworkActivity.PopNetworkActive();
+                networkActivity.Down();
             }
         }
 

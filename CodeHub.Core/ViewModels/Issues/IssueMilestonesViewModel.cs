@@ -2,8 +2,9 @@ using System.Threading.Tasks;
 using CodeHub.Core.ViewModels;
 using GitHubSharp.Models;
 using CodeHub.Core.Messages;
-using System.Linq;
 using System;
+using MvvmCross.Core.ViewModels;
+using System.Reactive.Linq;
 
 namespace CodeHub.Core.ViewModels.Issues
 {
@@ -12,25 +13,15 @@ namespace CodeHub.Core.ViewModels.Issues
         private MilestoneModel _selectedMilestone;
         public MilestoneModel SelectedMilestone
         {
-            get
-            {
-                return _selectedMilestone;
-            }
-            set
-            {
-                _selectedMilestone = value;
-                RaisePropertyChanged(() => SelectedMilestone);
-            }
+            get { return _selectedMilestone; }
+            set { this.RaiseAndSetIfChanged(ref _selectedMilestone, value); }
         }
 
         private bool _isSaving;
         public bool IsSaving
         {
             get { return _isSaving; }
-            private set {
-                _isSaving = value;
-                RaisePropertyChanged(() => IsSaving);
-            }
+            private set { this.RaiseAndSetIfChanged(ref _isSaving, value); }
         }
 
         private readonly CollectionViewModel<MilestoneModel> _milestones = new CollectionViewModel<MilestoneModel>();
@@ -55,7 +46,9 @@ namespace CodeHub.Core.ViewModels.Issues
             SaveOnSelect = navObject.SaveOnSelect;
             SelectedMilestone = TxSevice.Get() as MilestoneModel;
 
-            this.Bind(x => x.SelectedMilestone).Subscribe(x => SelectMilestone(x));
+            this.Bind(x => x.SelectedMilestone)
+                .Skip(1)
+                .Subscribe(x => SelectMilestone(x));
         }
 
         private async Task SelectMilestone(MilestoneModel x)

@@ -89,7 +89,7 @@ namespace CodeHub.Core.ViewModels.Accounts
                 IsLoggingIn = true;
                 var account = await _loginFactory.LoginWithBasic(apiUrl, Username, Password, TwoFactor);
                 var client = await _loginFactory.LoginAccount(account);
-                _application.ActivateUser(account, client);
+                _application.ActivateUser(account);
                 ReactiveUI.MessageBus.Current.SendMessage(new LogoutMessage());
             }
             catch (Exception)

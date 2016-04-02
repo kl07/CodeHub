@@ -169,10 +169,10 @@ namespace CodeHub.Core.ViewModels.Issues
         public IssueViewModel(IFeaturesService featuresService)
         {
             _featuresService = featuresService;
-            this.Bind(x => x.Issue, true).Where(x => x != null).Select(x => string.Equals(x.State, "closed")).Subscribe(x => IsClosed = x);
+            this.Bind(x => x.Issue).IsNotNull().Select(x => string.Equals(x.State, "closed")).Subscribe(x => IsClosed = x);
 
-            GoToOwner = ReactiveUI.ReactiveCommand.Create(this.Bind(x => x.Issue, true).Select(x => x != null));
-            GoToOwner.Subscribe(_ => ShowViewModel<ProfileViewModel>(new ProfileViewModel.NavObject { Username = Issue?.User?.Login }));
+            GoToOwner = ReactiveUI.ReactiveCommand.Create(this.Bind(x => x.Issue).Select(x => x != null));
+            GoToOwner.Subscribe(_ => ShowViewModel<UserViewModel>(new UserViewModel.NavObject { Username = Issue?.User?.Login }));
         }
 
         public void Init(NavObject navObject)

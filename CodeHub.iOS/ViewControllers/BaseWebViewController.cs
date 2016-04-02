@@ -3,11 +3,14 @@ using UIKit;
 using Foundation;
 using WebKit;
 using CodeHub.iOS.Utilities;
+using CodeHub.Core.Services;
+using MvvmCross.Platform;
 
 namespace CodeHub.iOS.ViewControllers
 {
     public abstract class BaseWebViewController : BaseViewController
     {
+        private readonly INetworkActivity _networkActivity = Mvx.Resolve<INetworkActivityService>().Create();
         protected UIBarButtonItem BackButton;
         protected UIBarButtonItem RefreshButton;
         protected UIBarButtonItem ForwardButton;
@@ -102,7 +105,7 @@ namespace CodeHub.iOS.ViewControllers
 
         protected virtual void OnLoadError (NSError error)
         {
-            NetworkActivity.PopNetworkActive();
+            _networkActivity.Down();
 
             if (BackButton != null)
             {
@@ -114,7 +117,7 @@ namespace CodeHub.iOS.ViewControllers
 
         protected virtual void OnLoadStarted (object sender, EventArgs e)
         {
-            NetworkActivity.PushNetworkActive();
+            _networkActivity.Up();
 
             if (RefreshButton != null)
                 RefreshButton.Enabled = false;
@@ -122,7 +125,7 @@ namespace CodeHub.iOS.ViewControllers
 
         protected virtual void OnLoadFinished(object sender, EventArgs e)
         {
-            NetworkActivity.PopNetworkActive();
+            _networkActivity.Down();
 
             if (BackButton != null)
             {

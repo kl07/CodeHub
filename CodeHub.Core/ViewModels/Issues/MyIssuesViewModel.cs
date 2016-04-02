@@ -7,6 +7,8 @@ using System.Linq;
 using System;
 using CodeHub.Core.Messages;
 using MvvmCross.Plugins.Messenger;
+using System.Reactive.Linq;
+using MvvmCross.Core.ViewModels;
 
 namespace CodeHub.Core.ViewModels.Issues
 {
@@ -18,18 +20,16 @@ namespace CodeHub.Core.ViewModels.Issues
         public int SelectedFilter
         {
             get { return _selectedFilter; }
-            set 
-            {
-                _selectedFilter = value;
-                RaisePropertyChanged(() => SelectedFilter);
-            }
+            set { this.RaiseAndSetIfChanged(ref _selectedFilter, value); }
         }
 
         public MyIssuesViewModel()
         {
             _issues = new FilterableCollectionViewModel<IssueModel, MyIssuesFilterModel>("MyIssues");
             _issues.GroupingFunction = Group;
-            _issues.Bind(x => x.Filter).Subscribe(_ => LoadCommand.Execute(false));
+            _issues.Bind(x => x.Filter)
+                .Skip(1)
+                .Subscribe(_ => LoadCommand.Execute(null));
 
             this.Bind(x => x.SelectedFilter).Subscribe(x =>
             {

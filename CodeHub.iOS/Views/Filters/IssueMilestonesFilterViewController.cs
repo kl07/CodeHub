@@ -5,6 +5,8 @@ using System.Linq;
 using CodeHub.Core.ViewModels;
 using CodeHub.iOS.Utilities;
 using CodeHub.iOS.DialogElements;
+using CodeHub.Core.Services;
+using MvvmCross.Platform;
 
 namespace CodeHub.iOS.Views.Filters
 {
@@ -19,17 +21,17 @@ namespace CodeHub.iOS.Views.Filters
         {
             base.ViewDidLoad();
 
+
             try
             {
-                NetworkActivity.PushNetworkActive();
-                var app = MvvmCross.Platform.Mvx.Resolve<CodeHub.Core.Services.IApplicationService>();
-                await _milestones.SimpleCollectionLoad(app.Client.Users[_username].Repositories[_repository].Milestones.GetAll(), false);
+                var network = Mvx.Resolve<INetworkActivityService>();
+                using (network.Activate())
+                {
+                    var app = Mvx.Resolve<IApplicationService>();
+                    await _milestones.SimpleCollectionLoad(app.Client.Users[_username].Repositories[_repository].Milestones.GetAll(), false);
+                }
             }
             catch {
-            }
-            finally
-            {
-                NetworkActivity.PopNetworkActive();
             }
         }
 

@@ -146,7 +146,6 @@
     <Compile Include="Views\Source\ChangesetView.cs" />
     <Compile Include="Views\Source\SourceTreeView.cs" />
     <Compile Include="Views\Repositories\OrganizationRepositoriesView.cs" />
-    <Compile Include="Views\Repositories\ReadmeView.cs" />
     <Compile Include="Views\Repositories\RepositoriesExploreView.cs" />
     <Compile Include="Views\Repositories\RepositoriesStarredView.cs" />
     <Compile Include="Views\Repositories\RepositoryView.cs" />
@@ -285,7 +284,6 @@
     <Compile Include="ViewControllers\Application\UpgradeViewController.cs" />
     <Compile Include="Services\InAppPurchaseService.cs" />
     <Compile Include="Utilities\UIWindowExtensions.cs" />
-    <Compile Include="Utilities\NetworkActivity.cs" />
     <InterfaceDefinition Include="ViewControllers\Repositories\PrivateRepositoryViewController.xib" />
     <Compile Include="ViewControllers\Repositories\PrivateRepositoryViewController.cs" />
     <Compile Include="ViewControllers\Repositories\PrivateRepositoryViewController.designer.cs">
@@ -349,7 +347,6 @@
     <Compile Include="Views\Gists\BaseGistsViewController.cs" />
     <Compile Include="ViewControllers\Users\BaseUserCollectionViewController.cs" />
     <Compile Include="ViewControllers\Users\OrganizationMembersViewController.cs" />
-    <Compile Include="ViewControllers\Users\ProfileViewController.cs" />
     <Compile Include="ViewControllers\Users\UserFollowersViewController.cs" />
     <Compile Include="ViewControllers\Users\UserFollowingsViewController.cs" />
     <Compile Include="ViewControllers\Organizations\TeamMembersViewController.cs" />
@@ -370,6 +367,15 @@
     <Compile Include="ViewControllers\Gists\GistFileModifyViewController.cs" />
     <None Include="WebResources\LICENSE" />
     <Compile Include="Bootstrap\MessengerPluginBootstrap.cs" />
+    <Compile Include="Services\NetworkActivityService.cs" />
+    <Compile Include="Services\ActionMenuService.cs" />
+    <Compile Include="Views\PickerAlertView.cs" />
+    <Compile Include="ViewControllers\Users\UserViewController.cs" />
+    <Compile Include="DialogElements\ElementExtensions.cs" />
+    <Compile Include="ViewControllers\Contents\CreateFileViewController.cs" />
+    <Compile Include="ViewControllers\Contents\ReadmeViewController.cs" />
+    <Compile Include="ViewControllers\IModalViewController.cs" />
+    <Compile Include="ViewControllers\MessageComposerViewController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -442,6 +448,15 @@
     </Reference>
     <Reference Include="MvvmCross.Localization">
       <HintPath>..\packages\MvvmCross.Binding.4.1.0\lib\Xamarin.iOS10\MvvmCross.Localization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\Xamarin.iOS10\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\Xamarin.iOS10\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Octokit">
+      <HintPath>..\packages\Octokit.0.19.0\lib\portable-net45+wp80+win+wpa81\Octokit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -584,6 +599,7 @@
     <Folder Include="ViewControllers\Users\" />
     <Folder Include="ViewControllers\Organizations\" />
     <Folder Include="ViewControllers\Gists\" />
+    <Folder Include="ViewControllers\Contents\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>

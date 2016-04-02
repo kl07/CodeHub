@@ -8,6 +8,8 @@ using MvvmCross.Core.ViewModels;
 using CodeHub.Core.Messages;
 using System.Linq;
 using MvvmCross.Plugins.Messenger;
+using System.Reactive.Linq;
+using ReactiveUI;
 
 namespace CodeHub.Core.ViewModels.Issues
 {
@@ -30,7 +32,9 @@ namespace CodeHub.Core.ViewModels.Issues
             Repository = nav.Repository;
             _issues = new FilterableCollectionViewModel<IssueModel, IssuesFilterModel>("IssuesViewModel:" + Username + "/" + Repository);
             _issues.GroupingFunction = Group;
-            _issues.Bind(x => x.Filter).Subscribe(_ => LoadCommand.Execute(true));
+            _issues.Bind(x => x.Filter)
+                .Skip(1)
+                .InvokeCommand(LoadCommand);
 
             _addToken = Messenger.SubscribeOnMainThread<IssueAddMessage>(x =>
             {

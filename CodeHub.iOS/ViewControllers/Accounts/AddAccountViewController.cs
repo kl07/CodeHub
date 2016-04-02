@@ -76,15 +76,14 @@ namespace CodeHub.iOS.ViewControllers.Accounts
                 return true;
             };
 
-            OnActivation(d =>
-                {
-                    d(User.GetChangedObservable().Subscribe(x => ViewModel.Username = x));
-                    d(Password.GetChangedObservable().Subscribe(x => ViewModel.Password = x));
-                    d(Domain.GetChangedObservable().Subscribe(x => ViewModel.Domain = x));
-                    d(LoginButton.GetClickedObservable().BindCommand(ViewModel.LoginCommand));
-                    d(ViewModel.Bind(x => x.IsLoggingIn).SubscribeStatus("Logging in..."));
-                    d(ViewModel.LoginCommand.ThrownExceptions.Subscribe(HandleLoginException));
-                });
+            OnActivation(d => {
+                d(User.GetChangedObservable().Subscribe(x => ViewModel.Username = x));
+                d(Password.GetChangedObservable().Subscribe(x => ViewModel.Password = x));
+                d(Domain.GetChangedObservable().Subscribe(x => ViewModel.Domain = x));
+                d(LoginButton.GetClickedObservable().BindCommand(ViewModel.LoginCommand));
+                d(ViewModel.Bind(x => x.IsLoggingIn).SubscribeStatus("Logging in..."));
+                d(ViewModel.LoginCommand.ThrownExceptions.Subscribe(HandleLoginException));
+            });
         }
 
         private void HandleLoginException(Exception e)

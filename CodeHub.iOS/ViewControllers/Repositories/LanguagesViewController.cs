@@ -7,13 +7,14 @@ using System.Reactive.Subjects;
 using System;
 using System.Reactive.Linq;
 using Foundation;
-using CodeHub.iOS.Utilities;
-using System.Net;
+using MvvmCross.Platform;
+using CodeHub.Core.Services;
 
 namespace CodeHub.iOS.ViewControllers.Repositories
 {
     public class LanguagesViewController : DialogViewController
     {
+        private readonly INetworkActivityService _networkActivity = Mvx.Resolve<INetworkActivityService>();
         private readonly ISubject<Language> _languageSubject = new Subject<Language>();
 
         public IObservable<Language> Language
@@ -34,8 +35,9 @@ namespace CodeHub.iOS.ViewControllers.Repositories
         {
             base.ViewDidLoad();
 
-            NetworkActivity.PushNetworkActive();
-            Load().ContinueWith(t => NetworkActivity.PopNetworkActive()).ToBackground();
+            var network = _networkActivity.Create();
+            network.Up();
+            Load().ContinueWith(t => network.Down()).ToBackground();
         }
 
         private async Task Load()

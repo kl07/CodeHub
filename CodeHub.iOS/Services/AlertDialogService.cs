@@ -4,37 +4,40 @@ using UIKit;
 using System.Threading.Tasks;
 using Foundation;
 using CoreGraphics;
+using BigTed;
+using System.Reactive.Disposables;
 
 namespace CodeHub.iOS.Services
 {
     public class AlertDialogService : IAlertDialogService
     {
+        private static UIViewController ViewController
+        {
+            get { return UIApplication.SharedApplication.KeyWindow.GetVisibleViewController(); }
+        }
+        
         public Task<bool> PromptYesNo(string title, string message)
         {
             var tcs = new TaskCompletionSource<bool>();
-            var alert = new UIAlertView {Title = title, Message = message};
-            alert.CancelButtonIndex = alert.AddButton("No");
-            var ok = alert.AddButton("Yes");
-            alert.Clicked += (sender, e) => tcs.SetResult(e.ButtonIndex == ok);
-            alert.Show();
+            var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
+            alert.AddAction(UIAlertAction.Create("No", UIAlertActionStyle.Cancel, x => tcs.SetResult(false)));
+            alert.AddAction(UIAlertAction.Create("Yes", UIAlertActionStyle.Default, x => tcs.SetResult(true)));
+            ViewController.PresentViewController(alert, true, null);
             return tcs.Task;
         }
 
         public Task Alert(string title, string message)
         {
-            var tcs = new TaskCompletionSource<object>();
-            ShowAlert(title, message, () => tcs.SetResult(null));
-            return tcs.Task;
+            return ShowAlert(title, message);
         }
 
-        public static void ShowAlert(string title, string message, Action dismissed = null)
+        public static Task ShowAlert(string title, string message)
         {
+            var tcs = new TaskCompletionSource<object>();
             var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
-            alert.AddAction(UIAlertAction.Create("Ok", UIAlertActionStyle.Default, x => {
-                dismissed?.Invoke();
-                alert.Dispose();
-            }));
-            UIApplication.SharedApplication.KeyWindow.GetVisibleViewController().PresentViewController(alert, true, null);
+            alert.AddAction(UIAlertAction.Create("Ok", UIAlertActionStyle.Default, x => tcs.SetResult(true)));
+            ViewController.PresentViewController(alert, true, null);
+            return tcs.Task;
         }
 
         public static void ShareUrl(string url, UIBarButtonItem barButtonItem = null)
@@ -75,23 +78,34 @@ namespace CodeHub.iOS.Services
         public Task<string> PromptTextBox(string title, string message, string defaultValue, string okTitle)
         {
             var tcs = new TaskCompletionSource<string>();
-            var alert = new UIAlertView();
-            alert.Title = title;
-            alert.Message = message;
-            alert.AlertViewStyle = UIAlertViewStyle.PlainTextInput;
-            var cancelButton = alert.AddButton("Cancel");
-            var okButton = alert.AddButton(okTitle);
-            alert.CancelButtonIndex = cancelButton;
-            alert.GetTextField(0).Text = defaultValue;
-            alert.Clicked += (s, e) =>
-            {
-                if (e.ButtonIndex == okButton)
-                    tcs.SetResult(alert.GetTextField(0).Text);
-                else
-                    tcs.SetCanceled();
-            };
-            alert.Show();
+            var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
+
+            alert.AddTextField(t => {
+                t.Text = defaultValue;
+            });
+
+            alert.AddAction(UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, x => tcs.SetCanceled()));
+            alert.AddAction(UIAlertAction.Create("Ok", UIAlertActionStyle.Default, x => tcs.SetResult(alert.TextFields[0].Text)));
+            ViewController.PresentViewController(alert, true, null);
             return tcs.Task;
+        }
+
+        public IDisposable Show(string text)
+        {
+            BTProgressHUD.Show(text, maskType: ProgressHUD.MaskType.Gradient);
+            return Disposable.Create(BTProgressHUD.Dismiss);
+        }
+
+        public IDisposable ShowSuccess(string text)
+        {
+            BTProgressHUD.ShowSuccessWithStatus(text);
+            return Disposable.Create(BTProgressHUD.Dismiss);
+        }
+
+        public IDisposable ShowError(string text)
+        {
+            BTProgressHUD.ShowErrorWithStatus(text);
+            return Disposable.Create(BTProgressHUD.Dismiss);
         }
     }
 }

@@ -97,14 +97,14 @@ namespace CodeHub.iOS.ViewControllers
                 EmptyView.Value.Frame = new CGRect(0, 0, TableView.Bounds.Width, TableView.Bounds.Height);
                 TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
                 TableView.BringSubviewToFront(EmptyView.Value);
-                TableView.TableHeaderView.Do(y => y.Hidden = true);
+                TableView.TableHeaderView.Valid(y => y.Hidden = true);
                 UIView.Animate(0.2f, 0f, UIViewAnimationOptions.AllowUserInteraction | UIViewAnimationOptions.CurveEaseIn | UIViewAnimationOptions.BeginFromCurrentState,
                     () => EmptyView.Value.Alpha = 1.0f, null);
             }
             else if (EmptyView.IsValueCreated)
             {
                 EmptyView.Value.UserInteractionEnabled = false;
-                TableView.TableHeaderView.Do(y => y.Hidden = false);
+                TableView.TableHeaderView.Valid(y => y.Hidden = false);
                 TableView.SeparatorStyle = UITableViewCellSeparatorStyle.SingleLine;
                 UIView.Animate(0.1f, 0f, UIViewAnimationOptions.AllowUserInteraction | UIViewAnimationOptions.CurveEaseIn | UIViewAnimationOptions.BeginFromCurrentState,
                     () => EmptyView.Value.Alpha = 0f, null);
@@ -174,8 +174,6 @@ namespace CodeHub.iOS.ViewControllers
                 {
                     try
                     {
-                        NetworkActivity.PushNetworkActive();
-
                         var a = weakAction.Get();
                         if (a != null)
                             await Task.Run(a);
@@ -187,11 +185,6 @@ namespace CodeHub.iOS.ViewControllers
                     {
                         AlertDialogService.ShowAlert("Unable to load more!", e.Message);
                     }
-                    finally
-                    {
-                        NetworkActivity.PopNetworkActive();
-                    }
-
                 };    
             }
 

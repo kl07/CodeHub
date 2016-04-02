@@ -7,6 +7,7 @@ using GitHubSharp.Models;
 using MvvmCross.Plugins.Messenger;
 using CodeHub.Core.Messages;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace CodeHub.Core.ViewModels.PullRequests
 {
@@ -28,11 +29,7 @@ namespace CodeHub.Core.ViewModels.PullRequests
         public int SelectedFilter
         {
             get { return _selectedFilter; }
-            set 
-            {
-                _selectedFilter = value;
-                RaisePropertyChanged(() => SelectedFilter);
-            }
+            set { this.RaiseAndSetIfChanged(ref _selectedFilter, value); }
         }
 
         public ICommand GoToPullRequestCommand
@@ -42,7 +39,9 @@ namespace CodeHub.Core.ViewModels.PullRequests
 
         public PullRequestsViewModel()
         {
-            this.Bind(x => x.SelectedFilter).Subscribe(_ => LoadCommand.Execute(null));
+            this.Bind(x => x.SelectedFilter)
+                .Skip(1)
+                .Subscribe(_ => LoadCommand.Execute(null));
         }
 
         public void Init(NavObject navObject) 

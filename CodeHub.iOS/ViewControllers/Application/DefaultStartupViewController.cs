@@ -28,7 +28,7 @@ namespace CodeHub.iOS.ViewControllers.Application
                 return e;
             }, true);
 
-            vm.Bind(x => x.SelectedStartupView, true).Subscribe(x =>
+            vm.Bind(x => x.SelectedStartupView).Subscribe(x =>
             {
                 if (Root.Count == 0)
                     return;

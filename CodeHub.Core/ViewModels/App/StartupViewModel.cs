@@ -7,9 +7,8 @@ using CodeHub.Core.Factories;
 using System.Windows.Input;
 using Dumb = MvvmCross.Core.ViewModels;
 using System.Threading.Tasks;
-using ReactiveUI;
-using CodeHub.Core.ViewModels.Accounts;
 using System.Reactive.Threading.Tasks;
+using MvvmCross.Core.ViewModels;
 
 namespace CodeHub.Core.ViewModels.App
 {
@@ -45,11 +44,11 @@ namespace CodeHub.Core.ViewModels.App
             get { return new Dumb.MvxAsyncCommand(Startup); }
         }
 
-        public ReactiveCommand<object> GoToMenu { get; } = ReactiveCommand.Create();
+        public ReactiveUI.ReactiveCommand<object> GoToMenu { get; } = ReactiveUI.ReactiveCommand.Create();
 
-        public ReactiveCommand<object> GoToAccounts { get; } = ReactiveCommand.Create();
+        public ReactiveUI.ReactiveCommand<object> GoToAccounts { get; } = ReactiveUI.ReactiveCommand.Create();
 
-        public ReactiveCommand<object> GoToNewAccount { get; } = ReactiveCommand.Create();
+        public ReactiveUI.ReactiveCommand<object> GoToNewAccount { get; } = ReactiveUI.ReactiveCommand.Create();
 
         public StartupViewModel(
             ILoginFactory loginFactory, 
@@ -97,7 +96,7 @@ namespace CodeHub.Core.ViewModels.App
                 Status = "Logging in as " + account.Username;
 
                 var client = await _loginFactory.LoginAccount(account);
-                _applicationService.ActivateUser(account, client);
+                _applicationService.ActivateUser(account);
 
                 if (!isEnterprise)
                     StarOrWatch();

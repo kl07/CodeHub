@@ -35,7 +35,7 @@ namespace CodeHub.iOS.Views.PullRequests
 
             OnActivation(d =>
             {
-                d(vm.Bind(x => x.SelectedFilter, true).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
+                d(vm.Bind(x => x.SelectedFilter).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
                 d(_viewSegment.GetChangedObservable().Subscribe(x => vm.SelectedFilter = x));
             });
         }

@@ -65,7 +65,7 @@ namespace CodeHub.iOS.Views
             {
                 d(checkButton.GetClickedObservable().BindCommand(vm.ReadAllCommand));
                 d(vm.Bind(x => x.IsMarking).SubscribeStatus("Marking..."));
-                d(vm.Bind(x => x.ShownIndex, true).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
+                d(vm.Bind(x => x.ShownIndex).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
                 d(_viewSegment.GetChangedObservable().Subscribe(x => vm.ShownIndex = x));
                 d(o.Subscribe(_ => NavigationItem.RightBarButtonItem.Enabled = vm.ReadAllCommand.CanExecute(null)));
             });

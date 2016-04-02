@@ -34,7 +34,7 @@ namespace CodeHub.iOS.Views.Source
 
             OnActivation(d =>
             {
-                d(vm.Bind(x => x.SelectedFilter, true).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
+                d(vm.Bind(x => x.SelectedFilter).Subscribe(x => _viewSegment.SelectedSegment = (nint)x));
                 d(_viewSegment.GetChangedObservable().Subscribe(_ => vm.SelectedFilter = (int)_viewSegment.SelectedSegment));
             });
         }

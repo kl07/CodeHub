@@ -2,24 +2,17 @@ using GitHubSharp;
 using System.Threading.Tasks;
 using MvvmCross.Core.ViewModels;
 using CodeHub.Core.ViewModels;
-using System.Windows.Input;
 using System.Net;
 using System;
+using System.Reactive;
 
 namespace CodeHub.Core.ViewModels
 {
-    public abstract class LoadableViewModel : BaseViewModel
+    public abstract class LoadableViewModel : BaseViewModel, ILoadableViewModel
     {
-        public ICommand LoadCommand { get; }
+        public ReactiveUI.IReactiveCommand<Unit> LoadCommand { get; }
 
-        private bool _isLoading;
-        public bool IsLoading
-        {
-            get { return _isLoading; }
-            private set { this.RaiseAndSetIfChanged(ref _isLoading, value); }
-        }
-
-        private async Task LoadResource(bool forceCacheInvalidation)
+        private async Task LoadResource()
         {
             var retry = false;
             while (true)
@@ -29,7 +22,7 @@ namespace CodeHub.Core.ViewModels
 
                 try
                 {
-                    await Load(forceCacheInvalidation);
+                    await Load(false);
                     return;
                 }
                 catch (WebException)
@@ -42,47 +35,23 @@ namespace CodeHub.Core.ViewModels
             }
         }
 
-        protected async Task ExecuteLoadResource(bool forceCacheInvalidation)
-        {
-            try
-            {
-                await LoadResource(forceCacheInvalidation);
-            }
-            catch (System.IO.IOException)
-            {
-                DisplayAlert("Unable to communicate with GitHub as the transmission was interrupted! Please try again.");
-            }
-            catch (StatusCodeException e)
-            {
-                DisplayAlert(e.Message);
-            }
-        }
-
         protected LoadableViewModel()
         {
-            LoadCommand = new MvxCommand<bool?>(x => HandleLoadCommand(x), _ => !IsLoading);
-        }
-
-        private async Task HandleLoadCommand(bool? forceCacheInvalidation)
-        {
-            try
-            {
-                IsLoading = true;
-                await ExecuteLoadResource(forceCacheInvalidation ?? false);
-            }
-            catch (OperationCanceledException e)
-            {
-                // The operation was canceled... Don't worry
-                System.Diagnostics.Debug.WriteLine("The operation was canceled: " + e.Message);
-            }
-            catch (Exception e)
-            {
-                DisplayAlert("The request to load this item did not complete successfuly! " + e.Message);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+            LoadCommand = ReactiveUI.ReactiveCommand.CreateAsyncTask(async _ => {
+                try
+                {
+                    await LoadResource();
+                }
+                catch (OperationCanceledException e)
+                {
+                    // The operation was canceled... Don't worry
+                    System.Diagnostics.Debug.WriteLine("The operation was canceled: " + e.Message);
+                }
+                catch (System.IO.IOException)
+                {
+                    throw new Exception("Unable to communicate with GitHub as the transmission was interrupted! Please try again.");
+                }
+            });
         }
 
         protected abstract Task Load(bool forceCacheInvalidation);

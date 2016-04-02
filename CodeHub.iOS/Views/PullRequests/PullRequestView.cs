@@ -45,7 +45,7 @@ namespace CodeHub.iOS.Views.PullRequests
                 .Select(_ => Observable.Timer(TimeSpan.FromSeconds(0.2f)))
                 .Switch()
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Select(_ => ViewModel.Bind(x => x.IsClosed, true).Where(x => x.HasValue).Select(x => x.Value))
+                .Select(_ => ViewModel.Bind(x => x.IsClosed).Where(x => x.HasValue).Select(x => x.Value))
                 .Switch()
                 .Subscribe(x => 
                 {
@@ -82,7 +82,7 @@ namespace CodeHub.iOS.Views.PullRequests
 
             var actionButton = NavigationItem.RightBarButtonItem = new UIBarButtonItem(UIBarButtonSystemItem.Action) { Enabled = false };
 
-            ViewModel.Bind(x => x.IsLoading).Subscribe(x =>
+            ViewModel.LoadCommand.IsExecuting.Subscribe(x =>
             {
                 if (!x)
                 {
@@ -113,8 +113,7 @@ namespace CodeHub.iOS.Views.PullRequests
             ViewModel.BindCollection(x => x.Comments).Subscribe(_ => RenderComments());
             ViewModel.BindCollection(x => x.Events).Subscribe(_ => RenderComments());
 
-            OnActivation(d =>
-            {
+            OnActivation(d => {
                 d(_milestoneElement.Clicked.BindCommand(ViewModel.GoToMilestoneCommand));
                 d(_assigneeElement.Clicked.BindCommand(ViewModel.GoToAssigneeCommand));
                 d(_labelsElement.Clicked.BindCommand(ViewModel.GoToLabelsCommand));
@@ -126,7 +125,7 @@ namespace CodeHub.iOS.Views.PullRequests
 
                 d(ViewModel.Bind(x => x.IsModifying).SubscribeStatus("Loading..."));
 
-                d(ViewModel.Bind(x => x.Issue, true).Where(x => x != null).Subscribe(x =>
+                d(ViewModel.Bind(x => x.Issue).IsNotNull().Subscribe(x =>
                 {
                     _assigneeElement.Value = x.Assignee != null ? x.Assignee.Login : "Unassigned";
                     _milestoneElement.Value = x.Milestone != null ? x.Milestone.Title : "No Milestone";

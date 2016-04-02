@@ -10,6 +10,7 @@ using System.Collections.Specialized;
 using MvvmCross.Platform;
 using System.Reactive.Linq;
 using System.Reactive;
+using ReactiveUI;
 
 namespace CodeHub.Core.ViewModels
 {
@@ -66,17 +67,33 @@ namespace CodeHub.Core.ViewModels
 
 public static class BindExtensions
 {
-    public static IObservable<TR> Bind<T, TR>(this T viewModel, System.Linq.Expressions.Expression<Func<T, TR>> outExpr, bool activate = false) where T : INotifyPropertyChanged
+    public static IObservable<TR> Bind<T, TR>(this T viewModel, System.Linq.Expressions.Expression<Func<T, TR>> outExpr) where T : INotifyPropertyChanged
     {
         var expr = (System.Linq.Expressions.MemberExpression) outExpr.Body;
         var prop = (System.Reflection.PropertyInfo) expr.Member;
         var name = prop.Name;
         var comp = outExpr.Compile();
 
-        var ret = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(t => viewModel.PropertyChanged += t, t => viewModel.PropertyChanged -= t)
+        var obs = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(t => viewModel.PropertyChanged += t, t => viewModel.PropertyChanged -= t)
             .Where(x => string.Equals(x.EventArgs.PropertyName, name))
             .Select(x => comp(viewModel));
-        return activate ? ret.StartWith(comp(viewModel)) : ret;
+
+        var firstObs = Observable.Create<TR>(o => {
+            try
+            {
+                o.OnNext(comp(viewModel));
+            }
+            catch (Exception e)
+            {
+                o.OnError(e);
+            }
+           
+            o.OnCompleted();
+
+            return System.Reactive.Disposables.Disposable.Empty;
+        });
+
+        return firstObs.Concat(obs);
     }
 
     public static IObservable<Unit> BindCollection<T>(this T viewModel, System.Linq.Expressions.Expression<Func<T, INotifyCollectionChanged>> outExpr, bool activate = false) where T : INotifyPropertyChanged

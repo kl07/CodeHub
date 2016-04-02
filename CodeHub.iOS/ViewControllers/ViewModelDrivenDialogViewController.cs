@@ -10,6 +10,9 @@ using MvvmCross.Binding.BindingContext;
 using MvvmCross.Platform.Core;
 using CodeHub.iOS.Utilities;
 using System.Linq;
+using CodeHub.Core.Services;
+using MvvmCross.Platform;
+using ReactiveUI;
 
 namespace CodeHub.iOS.ViewControllers
 {
@@ -114,6 +117,7 @@ namespace CodeHub.iOS.ViewControllers
 
     public abstract class ViewModelDrivenDialogViewController : DialogViewController, IMvxIosView, IMvxEventSourceViewController
     {
+        private readonly INetworkActivity _networkActivity = Mvx.Resolve<INetworkActivityService>().Create();
         private bool _manualRefreshRequested;
   
         public override void ViewDidLoad()
@@ -121,17 +125,20 @@ namespace CodeHub.iOS.ViewControllers
             base.ViewDidLoad();
             ViewDidLoadCalled.Raise(this);
 
-            var loadableViewModel = ViewModel as LoadableViewModel;
+            var loadableViewModel = ViewModel as ILoadableViewModel;
             if (loadableViewModel != null)
             {
                 RefreshControl = new UIRefreshControl();
-                OnActivation(d =>
-                {
-                    d(loadableViewModel.Bind(x => x.IsLoading, true).Subscribe(x =>
+                OnActivation(d => {
+                    d(loadableViewModel.LoadCommand.IsExecuting.Subscribe(x => {
+                        if (x) _networkActivity.Up();
+                        else _networkActivity.Down();
+                    }));
+
+                    d(loadableViewModel.LoadCommand.IsExecuting.Subscribe(x =>
                     {
                         if (x)
                         {
-                            NetworkActivity.PushNetworkActive();
                             RefreshControl.BeginRefreshing();
 
                             if (!_manualRefreshRequested)
@@ -145,8 +152,6 @@ namespace CodeHub.iOS.ViewControllers
                         }
                         else
                         {
-                            NetworkActivity.PopNetworkActive();
-
                             if (RefreshControl.Refreshing)
                             {
                                 // Stupid bug...
@@ -179,11 +184,11 @@ namespace CodeHub.iOS.ViewControllers
 
         private void HandleRefreshRequested(object sender, EventArgs e)
         {
-            var loadableViewModel = ViewModel as LoadableViewModel;
+            var loadableViewModel = ViewModel as ILoadableViewModel;
             if (loadableViewModel != null)
             {
                 _manualRefreshRequested = true;
-                loadableViewModel.LoadCommand.Execute(true);
+                loadableViewModel.LoadCommand.ExecuteIfCan();
             }
         }
 
@@ -195,9 +200,9 @@ namespace CodeHub.iOS.ViewControllers
 
             if (!_isLoaded)
             {
-                var loadableViewModel = ViewModel as LoadableViewModel;
+                var loadableViewModel = ViewModel as ILoadableViewModel;
                 if (loadableViewModel != null)
-                    loadableViewModel.LoadCommand.Execute(false);
+                    loadableViewModel.LoadCommand.ExecuteIfCan();
                 _isLoaded = true;
             }
 
@@ -220,7 +225,11 @@ namespace CodeHub.iOS.ViewControllers
         public IMvxViewModel ViewModel
         {
             get { return DataContext as IMvxViewModel;  }
-            set { DataContext = value; }
+            set 
+            { 
+                DataContext = value; 
+                this.RaisePropertyChanged();
+            }
         }
 
         public IMvxBindingContext BindingContext { get; set; }

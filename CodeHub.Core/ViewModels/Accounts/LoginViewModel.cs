@@ -3,8 +3,8 @@ using CodeHub.Core.ViewModels;
 using CodeHub.Core.Data;
 using System.Threading.Tasks;
 using CodeHub.Core.Factories;
-using ReactiveUI;
 using CodeHub.Core.Messages;
+using MvvmCross.Core.ViewModels;
 
 namespace CodeHub.Core.ViewModels.Accounts
 {
@@ -73,8 +73,8 @@ namespace CodeHub.Core.ViewModels.Accounts
                 IsLoggingIn = false;
             }
 
-            this.GetApplication().ActivateUser(loginData.Account, loginData.Client);
-            MessageBus.Current.SendMessage(new LogoutMessage());
+            this.GetApplication().ActivateUser(loginData.Account);
+            ReactiveUI.MessageBus.Current.SendMessage(new LogoutMessage());
         }
 
         public class NavObject

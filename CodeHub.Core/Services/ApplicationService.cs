@@ -2,12 +2,15 @@ using CodeHub.Core.Data;
 using CodeHub.Core.Services;
 using GitHubSharp;
 using System;
+using Octokit;
+using CodeHub.Core.Utils;
 
 namespace CodeHub.Core.Services
 {
     public class ApplicationService : IApplicationService
     {
         public Client Client { get; private set; }
+        public IGitHubClient GitHubClient { get; private set; }
         public GitHubAccount Account { get; private set; }
         public IAccountsService Accounts { get; private set; }
 
@@ -18,22 +21,31 @@ namespace CodeHub.Core.Services
             Accounts = accountsService;
         }
 
-        public void DeactivateUser()
+        public void ActivateUser(GitHubAccount account)
         {
-            Accounts.SetActiveAccount(null);
-            Accounts.SetDefault(null);
-            Account = null;
-            Client = null;
-        }
+            if (account == null)
+            {
+                Accounts.SetActiveAccount(null);
+                Accounts.SetDefault(null);
+                Account = null;
+                Client = null;
+                GitHubClient = null;
+            }
+            else
+            {
+                var domain = account.Domain ?? Client.DefaultApi;
+                var credentials = new Credentials(account.OAuth);
+                var oldClient = Client.BasicOAuth(account.OAuth, domain);
+                var newClient = OctokitClientFactory.Create(new Uri(domain), credentials);
 
-        public void ActivateUser(GitHubAccount account, Client client)
-        {
-            Accounts.SetActiveAccount(account);
-            Account = account;
-            Client = client;
+                Accounts.SetActiveAccount(account);
+                Account = account;
+                Client = oldClient;
+                GitHubClient = newClient;
 
-            //Set the default account
-            Accounts.SetDefault(account);
+                //Set the default account
+                Accounts.SetDefault(account);  
+            }
         }
 
         public void SetUserActivationAction(Action action)

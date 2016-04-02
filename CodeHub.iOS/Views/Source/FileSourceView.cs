@@ -27,7 +27,7 @@ namespace CodeHub.iOS.Views.Source
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            ViewModel.Bind(x => x.IsLoading).Subscribe(x => _actionButton.Enabled = !x);
+            ViewModel.LoadCommand.IsExecuting.Subscribe(x => _actionButton.Enabled = !x);
         }
 
         public override void ViewWillAppear(bool animated)

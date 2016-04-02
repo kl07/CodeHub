@@ -83,8 +83,8 @@ namespace CodeHub.Core.ViewModels.Changesets
             _application = application;
             _featuresService = featuresService;
 
-            GoToOwner = ReactiveUI.ReactiveCommand.Create(this.Bind(x => x.Changeset, true).Select(x => x?.Author?.Login != null));
-            GoToOwner.Subscribe(_ => ShowViewModel<ProfileViewModel>(new ProfileViewModel.NavObject { Username = Changeset?.Author?.Login }));
+            GoToOwner = ReactiveUI.ReactiveCommand.Create(this.Bind(x => x.Changeset).Select(x => x?.Author?.Login != null));
+            GoToOwner.Subscribe(_ => ShowViewModel<UserViewModel>(new UserViewModel.NavObject { Username = Changeset?.Author?.Login }));
         }
 
         public void Init(NavObject navObject)

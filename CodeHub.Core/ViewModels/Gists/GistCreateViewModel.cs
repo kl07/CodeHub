@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using GitHubSharp.Models;
 using System.Linq;
 using CodeHub.Core.Messages;
-using ReactiveUI;
+using MvvmCross.Core.ViewModels;
 
 namespace CodeHub.Core.ViewModels.Gists
 {
@@ -40,15 +40,14 @@ namespace CodeHub.Core.ViewModels.Gists
             set { this.RaiseAndSetIfChanged(ref _files, value); }
         }
 
-        public IReactiveCommand<GistModel> SaveCommand { get; }
+        public ReactiveUI.IReactiveCommand<GistModel> SaveCommand { get; }
 
-        public IReactiveCommand<object> CancelCommand { get; }
-
+        public ReactiveUI.IReactiveCommand<object> CancelCommand { get; }
 
         public GistCreateViewModel()
         {
-            CancelCommand = ReactiveCommand.Create();
-            SaveCommand = ReactiveCommand.CreateAsyncTask(_ => Save());
+            CancelCommand = ReactiveUI.ReactiveCommand.Create();
+            SaveCommand = ReactiveUI.ReactiveCommand.CreateAsyncTask(_ => Save());
             SaveCommand.ThrownExceptions.Subscribe(x => DisplayAlert(x.Message));
         }
 

@@ -16,7 +16,8 @@ namespace ReactiveUI
             if (@this == null)
                 return;
 
-            if (@this.CanExecute(o))
+            var canExecute = @this.CanExecute(o);
+            if (canExecute)
                 @this.Execute(o);
         }
 
@@ -59,7 +60,7 @@ namespace ReactiveUI
                 assignment(button);
             });
 
-            return new CompositeDisposable(mainDisposable, unassignDisposable, Disposable.Create(() => recentEventDisposable.Dispose()));
+            return new CompositeDisposable(mainDisposable, unassignDisposable, Disposable.Create(recentEventDisposable.Dispose));
         }
     }
 }

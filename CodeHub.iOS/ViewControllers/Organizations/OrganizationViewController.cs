@@ -28,8 +28,7 @@ namespace CodeHub.iOS.ViewControllers.Organizations
             var gists = new StringElement("Gists", Octicon.Gist.ToImage());
             Root.Reset(new Section(new UIView(new CGRect(0, 0, 0, 20f))) { members, teams }, new Section { events, followers }, new Section { repos, gists });
 
-            OnActivation(d =>
-            {
+            OnActivation(d => {
                 d(members.Clicked.BindCommand(vm.GoToMembersCommand));
                 d(teams.Clicked.BindCommand(vm.GoToTeamsCommand));
                 d(followers.Clicked.BindCommand(vm.GoToFollowersCommand));
@@ -37,7 +36,7 @@ namespace CodeHub.iOS.ViewControllers.Organizations
                 d(repos.Clicked.BindCommand(vm.GoToRepositoriesCommand));
                 d(gists.Clicked.BindCommand(vm.GoToGistsCommand));
 
-                d(vm.Bind(x => x.Organization, true).Where(x => x != null).Subscribe(x =>
+                d(vm.Bind(x => x.Organization).IsNotNull().Subscribe(x =>
                 {
                     HeaderView.SubText = string.IsNullOrWhiteSpace(x.Name) ? x.Login : x.Name;
                     HeaderView.SetImage(x.AvatarUrl, Images.Avatar);

@@ -4,7 +4,6 @@ using MvvmCross.Core.ViewModels;
 using CodeHub.Core.ViewModels;
 using MvvmCross.Plugins.Messenger;
 using MvvmCross.Platform;
-using ReactiveUI;
 using System;
 using System.Reactive;
 using System.Reactive.Subjects;
@@ -24,28 +23,39 @@ namespace CodeHub.Core.ViewModels
         IObservable<Unit> RequestDismiss { get; }
     }
 
-    public interface IBaseViewModel : ISupportsActivation, IProvidesTitle, IRoutingViewModel
+    public interface IBaseViewModel : ReactiveUI.ISupportsActivation, IProvidesTitle, IRoutingViewModel
     {
     }
 
     /// <summary>
     ///    Defines the BaseViewModel type.
     /// </summary>
-    public abstract class BaseViewModel : MvxViewModel, IBaseViewModel, IReactiveObject
+    public abstract class BaseViewModel : MvxViewModel, IBaseViewModel, ReactiveUI.IReactiveObject
     {
-        private readonly ViewModelActivator _viewModelActivator = new ViewModelActivator();
+        private readonly ReactiveUI.ViewModelActivator _viewModelActivator = new ReactiveUI.ViewModelActivator();
         private readonly ISubject<IBaseViewModel> _requestNavigationSubject = new Subject<IBaseViewModel>();
         private readonly ISubject<Unit> _requestDismissSubject = new Subject<Unit>();
 
-        public event PropertyChangingEventHandler PropertyChanging;
-
-        public void RaisePropertyChanging(PropertyChangingEventArgs args)
+        private ReactiveUI.PropertyChangingEventHandler _handler1, _handler2;
+        event ReactiveUI.PropertyChangingEventHandler ReactiveUI.IReactiveObject.PropertyChanging
         {
-            this.RaisePropertyChanged(args.PropertyName);
+            add { _handler1 += value; }
+            remove { _handler1 -= value; }
         }
 
+        void ReactiveUI.IReactiveObject.RaisePropertyChanging(ReactiveUI.PropertyChangingEventArgs args)
+        {
+            _handler1?.Invoke(this, args);
+            _handler2?.Invoke(this, args);
+        }
 
-        ViewModelActivator ISupportsActivation.Activator
+        event ReactiveUI.PropertyChangingEventHandler ReactiveUI.INotifyPropertyChanging.PropertyChanging
+        {
+            add { _handler2 += value; }
+            remove { _handler2 -= value; }
+        }
+       
+        ReactiveUI.ViewModelActivator ReactiveUI.ISupportsActivation.Activator
         {
             get { return _viewModelActivator; }
         }
@@ -54,14 +64,7 @@ namespace CodeHub.Core.ViewModels
         public string Title
         {
             get { return _title; }
-            protected set
-            {
-                if (value != _title)
-                {
-                    _title = value;
-                    this.RaisePropertyChanged();
-                }
-            }
+            protected set { this.RaiseAndSetIfChanged(ref _title, value); }
         }
 
         protected void NavigateTo(IBaseViewModel viewModel)

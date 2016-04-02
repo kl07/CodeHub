@@ -54,7 +54,7 @@ namespace CodeHub.Core.ViewModels.Notifications
 
         public ICommand ReadAllCommand
         {
-            get { return _readAllCommand ?? (_readAllCommand = new MvxCommand(() => MarkAllAsRead(), () => ShownIndex != 2 && !IsLoading && !IsMarking && Notifications.Any())); }
+            get { return _readAllCommand ?? (_readAllCommand = new MvxCommand(() => MarkAllAsRead(), () => ShownIndex != 2 && !IsMarking && Notifications.Any())); }
         }
 
         public ICommand GoToNotificationCommand
@@ -102,7 +102,6 @@ namespace CodeHub.Core.ViewModels.Notifications
                 else _notifications.Filter = NotificationsFilterModel.CreateAllFilter();
                 ((IMvxCommand)ReadAllCommand).RaiseCanExecuteChanged();
             });
-            this.Bind(x => x.IsLoading).Subscribe(_ => ((IMvxCommand)ReadAllCommand).RaiseCanExecuteChanged());
 
             if (_notifications.Filter.Equals(NotificationsFilterModel.CreateUnreadFilter()))
                 _shownIndex = 0;

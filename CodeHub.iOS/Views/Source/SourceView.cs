@@ -15,7 +15,7 @@ namespace CodeHub.iOS.Views.Source
         {
             base.ViewDidLoad();
 
-            ViewModel.Bind(x => x.IsLoading).Subscribe(x => 
+            ViewModel.LoadCommand.IsExecuting.Subscribe(x => 
             {
                 if (x) return;
                 if (!string.IsNullOrEmpty(ViewModel.ContentPath))

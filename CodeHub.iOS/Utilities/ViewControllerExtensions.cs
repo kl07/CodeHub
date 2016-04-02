@@ -26,13 +26,10 @@ namespace CodeHub.iOS.Utilities
 
             try
             {
-                NetworkActivity.PushNetworkActive();
                 return await work();
             }
             finally
             {
-                NetworkActivity.PopNetworkActive();
-
                 hud.Hide();
 
                 //Enable all the toolbar items
@@ -58,13 +55,10 @@ namespace CodeHub.iOS.Utilities
 
             try
             {
-                NetworkActivity.PushNetworkActive();
                 await work();
             }
             finally
             {
-                NetworkActivity.PopNetworkActive();
-
                 hud.Hide();
 
                 //Enable all the toolbar items

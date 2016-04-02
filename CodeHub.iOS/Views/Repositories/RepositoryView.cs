@@ -38,7 +38,7 @@ namespace CodeHub.iOS.Views.Repositories
             Appeared.Take(1)
                 .Select(_ => Observable.Timer(TimeSpan.FromSeconds(0.35f)).Take(1))
                 .Switch()
-                .Select(_ => ViewModel.Bind(x => x.IsStarred, true).Where(x => x.HasValue))
+                .Select(_ => ViewModel.Bind(x => x.IsStarred).Where(x => x.HasValue))
                 .Switch()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => HeaderView.SetSubImage(x.Value ? Octicon.Star.ToImage() : null));
@@ -50,8 +50,7 @@ namespace CodeHub.iOS.Views.Repositories
             _watchers = _split.AddButton("Watchers", "-");
             _forks = _split.AddButton("Forks", "-");
 
-            OnActivation(d =>
-            {
+            OnActivation(d => {
                 d(_stargazers.Clicked.BindCommand(ViewModel.GoToStargazersCommand));
                 d(_watchers.Clicked.BindCommand(ViewModel.GoToWatchersCommand));
                 d(_forks.Clicked.BindCommand(ViewModel.GoToForkedCommand));
@@ -64,8 +63,8 @@ namespace CodeHub.iOS.Views.Repositories
                 d(_pullRequestsElement.Clicked.BindCommand(ViewModel.GoToPullRequestsCommand));
                 d(_sourceElement.Clicked.BindCommand(ViewModel.GoToSourceCommand));
 
-                d(ViewModel.Bind(x => x.Branches, true).Subscribe(_ => Render()));
-                d(ViewModel.Bind(x => x.Readme, true).Subscribe(_ => Render()));
+                d(ViewModel.Bind(x => x.Branches).Subscribe(_ => Render()));
+                d(ViewModel.Bind(x => x.Readme).Subscribe(_ => Render()));
 
                 d(_forkElement.Value.Clicked.Select(x => ViewModel.Repository.Parent).BindCommand(ViewModel.GoToForkParentCommand));
                 d(_issuesElement.Value.Clicked.BindCommand(ViewModel.GoToIssuesCommand));
@@ -74,7 +73,7 @@ namespace CodeHub.iOS.Views.Repositories
 
                 d(HeaderView.Clicked.BindCommand(ViewModel.GoToOwnerCommand));
 
-                d(ViewModel.Bind(x => x.Repository, true).Where(x => x != null).Subscribe(x =>
+                d(ViewModel.Bind(x => x.Repository).IsNotNull().Subscribe(x =>
                 {
                     if (x.Private && !_featuresService.IsProEnabled)
                     {

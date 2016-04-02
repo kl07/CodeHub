@@ -49,7 +49,7 @@ namespace CodeHub.iOS.Views.Issues
                 .Select(_ => Observable.Timer(TimeSpan.FromSeconds(0.2f)))
                 .Switch()
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Select(_ => ViewModel.Bind(x => x.IsClosed, true).Where(x => x.HasValue).Select(x => x.Value))
+                .Select(_ => ViewModel.Bind(x => x.IsClosed).Where(x => x.HasValue).Select(x => x.Value))
                 .Switch()
                 .Subscribe(x => 
                 {
@@ -92,8 +92,7 @@ namespace CodeHub.iOS.Views.Issues
                 if (x) this.ShowPrivateView(); 
             });
 
-            OnActivation(d =>
-            {
+            OnActivation(d => {
                 d(_milestoneElement.Clicked.BindCommand(ViewModel.GoToMilestoneCommand));
                 d(_assigneeElement.Clicked.BindCommand(ViewModel.GoToAssigneeCommand));
                 d(_labelsElement.Clicked.BindCommand(ViewModel.GoToLabelsCommand));
@@ -103,12 +102,15 @@ namespace CodeHub.iOS.Views.Issues
                 d(actionButton.GetClickedObservable().Subscribe(ShowExtraMenu));
                 d(HeaderView.Clicked.BindCommand(ViewModel.GoToOwner));
 
-                d(ViewModel.Bind(x => x.IsCollaborator, true).Subscribe(x => {
+                d(ViewModel.Bind(x => x.IsCollaborator).Subscribe(x => {
                     foreach (var i in new [] { _assigneeElement, _milestoneElement, _labelsElement })
                         i.Accessory = x ? UITableViewCellAccessory.DisclosureIndicator : UITableViewCellAccessory.None;
                 }));
 
-                d(ViewModel.Bind(x => x.IsLoading).Subscribe(x => actionButton.Enabled = !x));
+                d(ViewModel.Bind(x => x.LoadCommand)
+                    .Select(x => x.IsExecuting)
+                    .Switch()
+                    .Subscribe(x => actionButton.Enabled = !x));
             });
         }
 

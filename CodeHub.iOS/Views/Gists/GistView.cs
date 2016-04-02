@@ -45,7 +45,7 @@ namespace CodeHub.iOS.Views.Gists
             Appeared.Take(1)
                 .Select(_ => Observable.Timer(TimeSpan.FromSeconds(0.35f)).Take(1))
                 .Switch()
-                .Select(_ => ViewModel.Bind(x => x.IsStarred, true))
+                .Select(_ => ViewModel.Bind(x => x.IsStarred))
                 .Switch()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => HeaderView.SetSubImage(x ? Octicon.Star.ToImage() : null));
@@ -70,12 +70,12 @@ namespace CodeHub.iOS.Views.Gists
                 d(editButton.GetClickedObservable().Subscribe(_ => ShareButtonTap(editButton)));
                 d(_ownerElement.Clicked.BindCommand(ViewModel.GoToUserCommand));
 
-                d(ViewModel.Bind(x => x.IsStarred, true).Subscribe(isStarred => _splitRow2.Button2.Text = isStarred ? "Starred" : "Not Starred"));
+                d(ViewModel.Bind(x => x.IsStarred).Subscribe(isStarred => _splitRow2.Button2.Text = isStarred ? "Starred" : "Not Starred"));
 
                 d(ViewModel.BindCollection(x => x.Comments, true).Subscribe(_ => RenderGist()));
                 d(HeaderView.Clicked.BindCommand(ViewModel.GoToUserCommand));
 
-                d(ViewModel.Bind(x => x.Gist, true).Where(x => x != null).Subscribe(gist =>
+                d(ViewModel.Bind(x => x.Gist).IsNotNull().Subscribe(gist =>
                 {
                     _splitRow1.Button1.Text = (gist.Public ?? true) ? "Public" : "Private";
                     _splitRow1.Button2.Text = (gist.History?.Count ?? 0) + " Revisions";

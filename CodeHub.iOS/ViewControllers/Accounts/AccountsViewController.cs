@@ -62,7 +62,7 @@ namespace CodeHub.iOS.ViewControllers.Accounts
                 return;
             }
 
-            _applicationService.ActivateUser(githubAccount, null);
+            _applicationService.ActivateUser(githubAccount);
             MessageBus.Current.SendMessage(new LogoutMessage());
         }
 
